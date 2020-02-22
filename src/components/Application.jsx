@@ -35,6 +35,11 @@ class Application extends React.Component {
     ],
   };
 
+  handleCreate = post => {
+    const { posts } = this.state;
+    this.setState({ posts: [post, ...posts] });
+  };
+
   render() {
     const { posts } = this.state;
 
