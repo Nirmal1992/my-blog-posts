@@ -1,52 +1,36 @@
 import React from 'react';
 import Posts from './Posts';
+import { firestore } from '../firebase';
+import { generatePost } from '../utils/generatePost';
 
 class Application extends React.Component {
   state = {
-    posts: [
-      {
-        id: '1',
-        title: 'A Very Hot Take',
-        content:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Perferendis suscipit repellendus modi unde cumque, fugit in ad necessitatibus eos sed quasi et! Commodi repudiandae tempora ipsum fugiat. Quam, officia excepturi!',
-        user: {
-          uid: '123',
-          displayName: 'Bill Murray',
-          email: 'billmurray@mailinator.com',
-          photoURL: 'https://www.fillmurray.com/300/300',
-        },
-        stars: 1,
-        comments: 47,
-      },
-      {
-        id: '2',
-        title: 'The Sauciest of Opinions',
-        content:
-          'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Perferendis suscipit repellendus modi unde cumque, fugit in ad necessitatibus eos sed quasi et! Commodi repudiandae tempora ipsum fugiat. Quam, officia excepturi!',
-        user: {
-          uid: '456',
-          displayName: 'Mill Burray',
-          email: 'notbillmurray@mailinator.com',
-          photoURL: 'https://www.fillmurray.com/400/400',
-        },
-        stars: 3,
-        comments: 0,
-      },
-    ],
+    posts: [],
+    user: null,
   };
 
-  handleCreate = post => {
-    const { posts } = this.state;
-    this.setState({ posts: [post, ...posts] });
+  unsubscribe = null;
+
+  componentDidMount = async () => {
+    this.unsubscribe = await firestore
+      .collection('post')
+      .onSnapshot(snapshot => {
+        const posts = snapshot.docs.map(generatePost);
+        this.setState({ posts });
+      });
+  };
+
+  componentWillUnmount = () => {
+    this.unsubscribe();
   };
 
   render() {
-    const { posts } = this.state;
+    const { posts, user } = this.state;
 
     return (
       <main className='Application'>
         <h1>My Blog Posts</h1>
-        <Posts posts={posts} onCreate={this.handleCreate} />
+        <Posts posts={posts} />
       </main>
     );
   }
